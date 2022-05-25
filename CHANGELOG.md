@@ -1,3 +1,7 @@
+## 6.1.0
+
+- Migrate to rails 6.1
+
 ## 6.0.2
 
 - Add support for SQLAnywhere 17 structure unload
