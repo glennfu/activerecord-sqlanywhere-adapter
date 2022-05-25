@@ -14,10 +14,10 @@ module ActiveRecord
 
       def create
         establish_connection configuration_without_database
-        connection.create_database(configuration["database"], configuration)
-        connection.start_database(configuration["database"])
+        connection.create_database(configuration[:database], configuration)
+        connection.start_database(configuration[:database])
         establish_connection configuration_as_dba
-        connection.create_user(configuration["username"], configuration["password"])
+        connection.create_user(configuration[:username], configuration[:password])
         establish_connection configuration
       rescue ActiveRecord::StatementInvalid => error
         if error.message.include?("already exists")
@@ -29,8 +29,8 @@ module ActiveRecord
 
       def drop
         establish_connection configuration_without_database
-        connection.stop_database configuration["database"]
-        connection.drop_database configuration["database"]
+        connection.stop_database configuration[:database]
+        connection.drop_database configuration[:database]
       end
 
       def purge
@@ -60,7 +60,7 @@ module ActiveRecord
 
         establish_connection configuration_as_dba
         connection.execute("SET OPTION PUBLIC.min_password_length = 0")
-        connection.drop_user(configuration["username"])
+        connection.drop_user(configuration[:username])
 
         Kernel.system("dbisql", *args)
 
@@ -76,7 +76,7 @@ module ActiveRecord
       end
 
       def configuration_without_database
-        configuration_as_dba.merge("database" => "utility_db")
+        configuration_as_dba.merge(database: "utility_db")
       end
 
       def configuration_as_dba
@@ -84,11 +84,11 @@ module ActiveRecord
       end
 
       def cmd_connection_string
-        connection_string = "ENG=#{(configuration["server"])};"
-        connection_string += "DBN=#{configuration["database"]};"
-        connection_string += "UID=#{ActiveRecord::ConnectionAdapters::SQLAnywhereAdapter::DEFAULT_AUTH["username"]};"
-        connection_string += "PWD=#{ActiveRecord::ConnectionAdapters::SQLAnywhereAdapter::DEFAULT_AUTH["password"]};"
-        connection_string += "LINKS=#{configuration["commlinks"]};" if configuration["commlinks"]
+        connection_string = "ENG=#{(configuration[:server])};"
+        connection_string += "DBN=#{configuration[:database]};"
+        connection_string += "UID=#{ActiveRecord::ConnectionAdapters::SQLAnywhereAdapter::DEFAULT_AUTH[:username]};"
+        connection_string += "PWD=#{ActiveRecord::ConnectionAdapters::SQLAnywhereAdapter::DEFAULT_AUTH[:password]};"
+        connection_string += "LINKS=#{configuration[:commlinks]};" if configuration[:commlinks]
         connection_string
       end
     end
