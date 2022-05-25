@@ -1,3 +1,7 @@
+## 6.1.1
+
+- Fix migrations not working
+
 ## 6.1.0
 
 - Migrate to rails 6.1
