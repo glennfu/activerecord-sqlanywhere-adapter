@@ -1,3 +1,7 @@
+## 7.0.0
+
+- Migrate to rails 7.0
+
 ## 6.1.1
 
 - Fix migrations not working
