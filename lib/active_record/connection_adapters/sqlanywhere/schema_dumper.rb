@@ -3,7 +3,7 @@
 module ActiveRecord
   module ConnectionAdapters
     module SQLAnywhere
-      class SchemaDumper < ConnectionAdapters::SchemaDumper
+      class SchemaDumper < SchemaDumper
         private
 
         def default_primary_key?(column)

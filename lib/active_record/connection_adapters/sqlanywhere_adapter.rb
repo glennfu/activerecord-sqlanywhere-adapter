@@ -140,16 +140,11 @@ module ActiveRecord
 
       def translate_exception(exception, message:, sql:, binds:)
         case error_number(exception)
-        when -83
-          raise NoDatabaseError.new(message, sql: sql, binds: binds)
-        when -194
-          raise InvalidForeignKey.new(message, sql: sql, binds: binds)
-        when -195
-          raise NotNullViolation.new(message, sql: sql, binds: binds)
-        when -196
-          raise RecordNotUnique.new(message, sql: sql, binds: binds)
-        when -306
-          raise Deadlocked.new(message, sql: sql, binds: binds)
+        when -83 then NoDatabaseError.db_error(message)
+        when -194 then InvalidForeignKey.new(message, sql: sql, binds: binds)
+        when -195 then NotNullViolation.new(message, sql: sql, binds: binds)
+        when -196 then RecordNotUnique.new(message, sql: sql, binds: binds)
+        when -306 then Deadlocked.new(message, sql: sql, binds: binds)
         else
           super
         end
@@ -178,53 +173,64 @@ module ActiveRecord
         result
       end
 
-      def sqlanywhere_version
-        @sqlanywhere_version ||= Version.new(select_value("SELECT xp_msver('ProductVersion')"))
+      def get_database_version
+        Version.new(select_value("SELECT xp_msver('ProductVersion')"))
       end
+      alias :sqlanywhere_version :database_version
 
       def sqlanywhere?
         true
       end
 
-      protected
+      class << self
+        protected
 
-      def extract_limit(sql_type)
-        case sql_type
-        when /^tinyint/i then 1
-        when /^smallint/i then 2
-        when /^integer/i then 4
-        when /^bigint/i then 8
-        else super
+        def extract_limit(sql_type)
+          case sql_type
+          when /^tinyint/i then 1
+          when /^smallint/i then 2
+          when /^integer/i then 4
+          when /^bigint/i then 8
+          else super
+          end
+        end
+
+        def initialize_type_map(m)
+          m.register_type %r(boolean)i,         Type::Boolean.new
+          m.alias_type    %r(tinyint)i,         "boolean"
+          m.alias_type    %r(bit)i,             "boolean"
+
+          m.register_type %r(char)i,            Type::String.new
+          m.alias_type    %r(varchar)i,         "char"
+          m.alias_type    %r(varbit)i,          "char"
+          m.alias_type    %r(xml)i,             "char"
+
+          m.register_type %r(binary)i,            Type::Binary.new
+          m.alias_type    %r(long binary)i,       "binary"
+          m.alias_type    %r(uniqueidentifier)i,  "binary"
+
+          m.register_type %r(text)i,            Type::Text.new
+          m.alias_type    %r(long varchar)i,    "text"
+
+          m.register_type %r(date)i,              Type::Date.new
+          m.register_type %r(time)i,              Type::Time.new
+          m.register_type %r(timestamp)i,         Type::DateTime.new
+          m.register_type %r(datetime)i,          Type::DateTime.new
+
+          m.register_type %r(int)i,               Type::Integer.new
+          m.register_type %r(smallint)i,          Type::Integer.new(limit: 2)
+          m.register_type %r(^bigint)i,           Type::Integer.new(limit: 8)
+
+          super
         end
       end
 
-      def initialize_type_map(m)
-        m.register_type %r(boolean)i,         Type::Boolean.new
-        m.alias_type    %r(tinyint)i,         "boolean"
-        m.alias_type    %r(bit)i,             "boolean"
+      TYPE_MAP = Type::TypeMap.new.tap { |m| initialize_type_map(m) }
 
-        m.register_type %r(char)i,            Type::String.new
-        m.alias_type    %r(varchar)i,         "char"
-        m.alias_type    %r(varbit)i,          "char"
-        m.alias_type    %r(xml)i,             "char"
+      protected
 
-        m.register_type %r(binary)i,            Type::Binary.new
-        m.alias_type    %r(long binary)i,       "binary"
-        m.alias_type    %r(uniqueidentifier)i,  "binary"
-
-        m.register_type %r(text)i,            Type::Text.new
-        m.alias_type    %r(long varchar)i,    "text"
-
-        m.register_type %r(date)i,              Type::Date.new
-        m.register_type %r(time)i,              Type::Time.new
-        m.register_type %r(timestamp)i,         Type::DateTime.new
-        m.register_type %r(datetime)i,          Type::DateTime.new
-
-        m.register_type %r(int)i,               Type::Integer.new
-        m.register_type %r(smallint)i,          Type::Integer.new(limit: 2)
-        m.register_type %r(^bigint)i,           Type::Integer.new(limit: 8)
-
-        super
+      def type_map
+        TYPE_MAP
       end
 
       def column_definitions(table_name)

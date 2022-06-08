@@ -3,7 +3,7 @@
 module ActiveRecord
   module ConnectionAdapters
     module SQLAnywhere
-      class SchemaCreation < ConnectionAdapters::SchemaCreation
+      class SchemaCreation < SchemaCreation
         private
 
         def action_sql(action, dependency)

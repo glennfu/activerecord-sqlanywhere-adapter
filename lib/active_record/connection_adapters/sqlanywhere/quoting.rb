@@ -23,7 +23,7 @@ module ActiveRecord
           Quoting.quote_ident name
         end
 
-        def _quote(value, column = nil)
+        def quote(value, column = nil)
           case value
           # We might receive values with wrong encoding. Convert them to correct encoding.
           # dup the value since it might be Frozen
@@ -36,7 +36,7 @@ module ActiveRecord
           end
         end
 
-        def _type_cast(value)
+        def type_cast(value)
           case value
           # We might receive values with wrong encoding. Convert them to correct encoding
           # dup the value since it might be Frozen

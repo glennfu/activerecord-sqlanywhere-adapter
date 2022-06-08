@@ -147,7 +147,7 @@ module ActiveRecord
 
         def exec_query(sql, name = nil, binds = [], prepare = false)
           execute_stmt(sql, name, binds, cache_stmt: prepare) do |stmt, result|
-            ActiveRecord::Result.new(result.columns.map(&:name), result.rows) if result
+            build_result(columns: result.columns.map(&:name), rows: result.rows) if result
           end
         end
 

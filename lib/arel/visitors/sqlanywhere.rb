@@ -26,7 +26,7 @@ module Arel
         collector = maybe_visit o.limit, collector
 
         if o.offset
-          offset = Arel::Nodes::Offset.new(o.offset.expr.value.value + 1)
+          offset = Arel::Nodes::Offset.new(o.offset.expr.value + 1)
           o.offset = nil
 
           collector = maybe_visit offset, collector
