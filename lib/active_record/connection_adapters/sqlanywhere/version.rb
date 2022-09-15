@@ -3,7 +3,7 @@
 module Activerecord
   module ConnectionAdapters
     module SQLAnywhere
-      VERSION = "7.0.0"
+      VERSION = "7.0.1"
     end
   end
 end

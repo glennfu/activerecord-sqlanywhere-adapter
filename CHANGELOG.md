@@ -1,3 +1,7 @@
+## 7.0.1
+
+- Fix type mapping
+
 ## 7.0.0
 
 - Migrate to rails 7.0
