@@ -185,43 +185,49 @@ module ActiveRecord
       class << self
         protected
 
-        def extract_limit(sql_type)
-          case sql_type
-          when /^tinyint/i then 1
-          when /^smallint/i then 2
-          when /^integer/i then 4
-          when /^bigint/i then 8
-          else super
-          end
-        end
-
         def initialize_type_map(m)
-          m.register_type %r(boolean)i,         Type::Boolean.new
-          m.alias_type    %r(tinyint)i,         "boolean"
-          m.alias_type    %r(bit)i,             "boolean"
+          register_class_with_limit m, %r(bit)i,               Type::Boolean
+          register_class_with_limit m, %r(char)i,              Type::String
+          register_class_with_limit m, %r(binary)i,            Type::Binary
+          register_class_with_limit m, %r(long varchar)i,      Type::Text
+          register_class_with_precision m, %r(date)i,          Type::Date
+          register_class_with_precision m, %r(time)i,          Type::Time
+          register_class_with_precision m, %r(timestamp)i,     Type::DateTime
 
-          m.register_type %r(char)i,            Type::String.new
-          m.alias_type    %r(varchar)i,         "char"
-          m.alias_type    %r(varbit)i,          "char"
-          m.alias_type    %r(xml)i,             "char"
+          register_class_with_limit m, %r(integer)i,           Type::Integer
+          m.register_type %r(tinyint)i,                        Type::UnsignedInteger.new(limit: 1)
+          m.register_type %r(smallint)i,                       Type::Integer.new(limit: 2)
+          m.register_type %r(smallint)i,                       Type::Integer.new(limit: 2)
+          m.register_type %r(bigint)i,                         Type::Integer.new(limit: 8)
+          register_class_with_precision m, %r(float)i,         Type::Float.new
+          register_class_with_precision m, %r(real)i,          Type::Float.new(limit: 4)
+          register_class_with_precision m, %r(double)i,        Type::Float.new(limit: 8)
+          m.register_type %r(decimal)i do |sql_type|
+            scale     = extract_scale(sql_type)
+            precision = extract_precision(sql_type)
+            if scale == 0
+              Type::DecimalWithoutScale.new(precision: precision)
+            else
+              Type::Decimal.new(precision: precision, scale: scale)
+            end
+          end
 
-          m.register_type %r(binary)i,            Type::Binary.new
-          m.alias_type    %r(long binary)i,       "binary"
-          m.alias_type    %r(uniqueidentifier)i,  "binary"
-
-          m.register_type %r(text)i,            Type::Text.new
-          m.alias_type    %r(long varchar)i,    "text"
-
-          m.register_type %r(date)i,              Type::Date.new
-          m.register_type %r(time)i,              Type::Time.new
-          m.register_type %r(timestamp)i,         Type::DateTime.new
-          m.register_type %r(datetime)i,          Type::DateTime.new
-
-          m.register_type %r(int)i,               Type::Integer.new
-          m.register_type %r(smallint)i,          Type::Integer.new(limit: 2)
-          m.register_type %r(^bigint)i,           Type::Integer.new(limit: 8)
-
-          super
+          m.alias_type %r(long nvarchar)i,        "text"
+          m.alias_type %r(text)i,                 "text"
+          m.alias_type %r(ntext)i,                "text"
+          m.alias_type %r(xml)i,                  "string"
+          m.alias_type %r(datetime)i,             "timestamp"
+          m.alias_type %r(smalldatetime)i,        "timestamp"
+          m.alias_type %r(long binary)i,          "binary"
+          m.alias_type %r(var binary)i,           "binary"
+          m.alias_type %r(uniqueidentifier)i,     "binary"
+          m.alias_type %r(image)i,                "binary"
+          m.alias_type %r(nchar)i,                "char"
+          m.alias_type %r(nvarchar)i,             "char"
+          m.alias_type %r(varchar)i,              "char"
+          m.alias_type %r(varbit)i,               "char"
+          m.alias_type %r(uniqueidentifierstr)i,  "char"
+          m.alias_type %r(numeric)i,              "decimal"
         end
       end
 
