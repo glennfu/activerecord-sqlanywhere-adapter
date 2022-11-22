@@ -186,22 +186,21 @@ module ActiveRecord
         protected
 
         def initialize_type_map(m)
-          register_class_with_limit m, %r(bit)i,               Type::Boolean
           register_class_with_limit m, %r(char)i,              Type::String
+          register_class_with_limit m, "long varchar",         Type::Text
+          register_class_with_limit m, %r(bit)i,               Type::Boolean
           register_class_with_limit m, %r(binary)i,            Type::Binary
-          register_class_with_limit m, %r(long varchar)i,      Type::Text
-          register_class_with_precision m, %r(date)i,          Type::Date
-          register_class_with_precision m, %r(time)i,          Type::Time
-          register_class_with_precision m, %r(timestamp)i,     Type::DateTime
 
-          register_class_with_limit m, %r(integer)i,           Type::Integer
-          m.register_type %r(tinyint)i,                        Type::UnsignedInteger.new(limit: 1)
-          m.register_type %r(smallint)i,                       Type::Integer.new(limit: 2)
-          m.register_type %r(smallint)i,                       Type::Integer.new(limit: 2)
-          m.register_type %r(bigint)i,                         Type::Integer.new(limit: 8)
-          register_class_with_precision m, %r(float)i,         Type::Float.new
-          register_class_with_precision m, %r(real)i,          Type::Float.new(limit: 4)
-          register_class_with_precision m, %r(double)i,        Type::Float.new(limit: 8)
+          m.register_type "date",                              Type::Date.new
+          m.register_type "time",                              Type::Time.new
+          m.register_type "timestamp",                         Type::DateTime.new
+          m.register_type "timestamp with time zone",          Type::DateTime.new
+          m.register_type "uniqueidentifierstr",               Type::String.new(limit: 36)
+          m.register_type "uniqueidentifier",                  Type::Binary.new(limit: 36)
+          m.register_type "long binary",                       Type::Binary.new
+          m.register_type "float",                             Type::Float.new
+          m.register_type "real",                              Type::Float.new(limit: 4)
+          m.register_type "double",                            Type::Float.new(limit: 8)
           m.register_type %r(decimal)i do |sql_type|
             scale     = extract_scale(sql_type)
             precision = extract_precision(sql_type)
@@ -212,22 +211,30 @@ module ActiveRecord
             end
           end
 
-          m.alias_type %r(long nvarchar)i,        "text"
-          m.alias_type %r(text)i,                 "text"
-          m.alias_type %r(ntext)i,                "text"
-          m.alias_type %r(xml)i,                  "string"
-          m.alias_type %r(datetime)i,             "timestamp"
-          m.alias_type %r(smalldatetime)i,        "timestamp"
-          m.alias_type %r(long binary)i,          "binary"
-          m.alias_type %r(var binary)i,           "binary"
-          m.alias_type %r(uniqueidentifier)i,     "binary"
-          m.alias_type %r(image)i,                "binary"
-          m.alias_type %r(nchar)i,                "char"
-          m.alias_type %r(nvarchar)i,             "char"
-          m.alias_type %r(varchar)i,              "char"
-          m.alias_type %r(varbit)i,               "char"
-          m.alias_type %r(uniqueidentifierstr)i,  "char"
-          m.alias_type %r(numeric)i,              "decimal"
+          m.register_type "tinyint",                           Type::UnsignedInteger.new(limit: 1)
+          register_integer_type m, "smallint",                 limit: 2
+          register_integer_type m, "integer",                  limit: 4
+          register_integer_type m, "bigint",                   limit: 8
+
+          m.alias_type %r(nchar)i,                             "char"
+          m.alias_type "long nvarchar",                        "long varchar"
+          m.alias_type "xml",                                  "long varchar"
+          m.alias_type %r(nvarchar)i,                          "char"
+          m.alias_type %r(varchar)i,                           "char"
+          m.alias_type %r(numeric)i,                           "decimal"
+          m.alias_type %r(varbit)i,                            "char"
+          m.alias_type "long varbit",                          "long varchar"
+          m.alias_type %r(var binary)i,                        "binary"
+        end
+
+        def register_integer_type(mapping, key, **options)
+          mapping.register_type(key) do |sql_type|
+            if /\bunsigned\b/.match?(sql_type)
+              Type::UnsignedInteger.new(**options)
+            else
+              Type::Integer.new(**options)
+            end
+          end
         end
       end
 
