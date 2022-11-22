@@ -1,3 +1,7 @@
+## 7.0.2
+
+- Change type mapping, remove unused mapping
+
 ## 7.0.1
 
 - Fix type mapping
