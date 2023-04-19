@@ -51,7 +51,7 @@ module ActiveRecord
         args.push("-up") if need_option_for_password_unload?
         args.concat(Array(extra_flags)) if extra_flags
 
-        Kernel.system("dbunload", *args)
+        system("dbunload", *args, exception: true)
       end
 
       def structure_load(filename, extra_flags)
@@ -62,7 +62,7 @@ module ActiveRecord
         args = ["-c", connection.connection_string, "-q", filename, "-onerror", "exit", "-nogui"]
         args.concat(Array(extra_flags)) if extra_flags
 
-        Kernel.system("dbisql", *args)
+        system("dbisql", *args, exception: true)
 
         establish_connection configuration
       end
