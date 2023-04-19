@@ -1,3 +1,8 @@
+## 7.0.3
+
+- Fix system errors not propagating in structure_dump/structure_load
+- Fix incorrect connection string generation for structure_load
+
 ## 7.0.2
 
 - Change type mapping, remove unused mapping
