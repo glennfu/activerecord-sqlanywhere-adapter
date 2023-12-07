@@ -1,3 +1,7 @@
+## 7.0.4
+
+- Fix uniqueidentifier type trying to insert as binary instead of string in recent rails 7.0 versions(https://github.com/rails/rails/pull/48274)
+
 ## 7.0.3
 
 - Fix system errors not propagating in structure_dump/structure_load
