@@ -196,7 +196,7 @@ module ActiveRecord
           m.register_type "timestamp",                         Type::DateTime.new
           m.register_type "timestamp with time zone",          Type::DateTime.new
           m.register_type "uniqueidentifierstr",               Type::String.new(limit: 36)
-          m.register_type "uniqueidentifier",                  Type::Binary.new(limit: 36)
+          m.register_type "uniqueidentifier",                  Type::String.new(limit: 36)
           m.register_type "long binary",                       Type::Binary.new
           m.register_type "float",                             Type::Float.new
           m.register_type "real",                              Type::Float.new(limit: 4)
