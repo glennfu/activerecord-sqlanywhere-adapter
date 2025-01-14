@@ -1,3 +1,7 @@
+## 7.0.5
+
+- Fix "use_metadata_table" config option being used in the construction of sqlanywhere connection string
+
 ## 7.0.4
 
 - Fix uniqueidentifier type trying to insert as binary instead of string in recent rails 7.0 versions(https://github.com/rails/rails/pull/48274)
