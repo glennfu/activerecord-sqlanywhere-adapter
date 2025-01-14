@@ -53,6 +53,7 @@ module ActiveRecord
         conn_config.delete(:pool)
         conn_config.delete(:adapter)
         conn_config.delete(:blocking_timeout)
+        conn_config.delete(:use_metadata_table)
 
         conn_config.except!(*CREATE_DB_CONFIG)
 
