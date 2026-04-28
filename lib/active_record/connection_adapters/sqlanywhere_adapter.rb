@@ -91,7 +91,8 @@ module ActiveRecord
       def initialize(connection, logger, connection_string, config)
         @auto_commit = true
         @connection_string = connection_string
-        super(connection, logger, config)
+        # Rails 7.1 AbstractAdapter: 4-arg form sets @config from last hash and @connection_parameters from the third arg.
+        super(connection, logger, connection_string, config)
       end
 
       def supports_migrations?
@@ -116,7 +117,7 @@ module ActiveRecord
 
       def active?
         # The liveness variable is used a low-cost "no-op" to test liveness
-        @connection.execute_immediate("SET liveness = 1")
+        @raw_connection.execute_immediate("SET liveness = 1")
 
         true
       rescue SQLAnywhere2::Error
@@ -125,7 +126,7 @@ module ActiveRecord
 
       def disconnect!
         super
-        @connection.close
+        @raw_connection.close
       end
 
       def reconnect!
@@ -136,7 +137,7 @@ module ActiveRecord
       alias :reset! :reconnect!
 
       def discard!
-        @connection = nil
+        @raw_connection = nil
       end
 
       def translate_exception(exception, message:, sql:, binds:)
@@ -294,15 +295,15 @@ module ActiveRecord
       private
 
       def connect
-        @connection = SQLAnywhere2::Connection.new(conn_string: @connection_string)
+        @raw_connection = SQLAnywhere2::Connection.new(conn_string: @connection_string)
         configure_connection
       end
 
       def configure_connection
-        @connection.execute_immediate("SET TEMPORARY OPTION non_keywords = 'LOGIN'")
-        @connection.execute_immediate("SET TEMPORARY OPTION timestamp_format = 'YYYY-MM-DD HH:NN:SS'")
+        @raw_connection.execute_immediate("SET TEMPORARY OPTION non_keywords = 'LOGIN'")
+        @raw_connection.execute_immediate("SET TEMPORARY OPTION timestamp_format = 'YYYY-MM-DD HH:NN:SS'")
         # The liveness variable is used a low-cost "no-op" to test liveness
-        @connection.execute_immediate("CREATE VARIABLE liveness INT")
+        @raw_connection.execute_immediate("CREATE VARIABLE liveness INT")
       rescue
       end
     end

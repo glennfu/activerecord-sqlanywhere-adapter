@@ -112,7 +112,7 @@ module ActiveRecord
 
         def commit_db_transaction
           ActiveSupport::Dependencies.interlock.permit_concurrent_loads do
-            log("COMMIT", nil) { @connection.commit }
+            log("COMMIT", nil) { @raw_connection.commit }
           end
         ensure
           @auto_commit = true
@@ -120,7 +120,7 @@ module ActiveRecord
 
         def exec_rollback_db_transaction
           ActiveSupport::Dependencies.interlock.permit_concurrent_loads do
-            log("ROLLBACK", nil) { @connection.rollback }
+            log("ROLLBACK", nil) { @raw_connection.rollback }
           end
         ensure
           @auto_commit = true
@@ -174,19 +174,19 @@ module ActiveRecord
           ActiveSupport::Dependencies.interlock.permit_concurrent_loads do
             raise ActiveRecord::ActiveRecordError.new("Bind limit exceeded") if type_casted_binds.length > BIND_LIMIT
 
-            stmt = @connection.prepare(sql)
+            stmt = @raw_connection.prepare(sql)
 
             begin
               result = stmt.execute(*type_casted_binds)
             rescue SQLAnywhere2::Error => e
               stmt.close
-              @connection.rollback if @auto_commit
+              @raw_connection.rollback if @auto_commit
               raise e
             end
 
             ret = yield stmt, result if block_given?
             stmt.close
-            @connection.commit if @auto_commit
+            @raw_connection.commit if @auto_commit
             ret
           end
         end

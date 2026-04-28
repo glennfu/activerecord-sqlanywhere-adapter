@@ -4,6 +4,10 @@ module ActiveRecord
   module ConnectionAdapters
     module SQLAnywhere
       module Quoting
+        def sqlanywhere_encoding
+          (@raw_connection || @unconfigured_connection)&.encoding || Encoding::UTF_8
+        end
+
         def self.quote_ident(ident)
           # Remove backslashes and double quotes from ident
           ident = ident.to_s.gsub(/\\|"/, "")
@@ -27,11 +31,11 @@ module ActiveRecord
           case value
           # We might receive values with wrong encoding. Convert them to correct encoding.
           # dup the value since it might be Frozen
-          when String, ActiveSupport::Multibyte::Chars then super(value).dup.force_encoding(@connection.encoding)
+          when String, ActiveSupport::Multibyte::Chars then super(value).dup.force_encoding(sqlanywhere_encoding)
           when Type::Binary::Data then "'#{value}'"
           # This by default returns a value with ASCII_8BIT encoding which is a binary type in SQLAnywhere2
           # So we convert it to correct connection type
-          when BigDecimal then super(value).force_encoding(@connection.encoding)
+          when BigDecimal then super(value).force_encoding(sqlanywhere_encoding)
           else super(value)
           end
         end
@@ -40,11 +44,11 @@ module ActiveRecord
           case value
           # We might receive values with wrong encoding. Convert them to correct encoding
           # dup the value since it might be Frozen
-          when String, ActiveSupport::Multibyte::Chars then super(value).dup.force_encoding(@connection.encoding)
+          when String, ActiveSupport::Multibyte::Chars then super(value).dup.force_encoding(sqlanywhere_encoding)
           when Type::Binary::Data then value.to_s
           # This by default returns a value with ASCII_8BIT encoding which is a binary type in SQLAnywhere2
           # So we convert it to correct connection type
-          when BigDecimal then super(value).force_encoding(@connection.encoding)
+          when BigDecimal then super(value).force_encoding(sqlanywhere_encoding)
           else super(value)
           end
         end
