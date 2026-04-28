@@ -185,7 +185,7 @@ module ActiveRecord
             rescue SQLAnywhere2::Error => e
               stmt.close
               @raw_connection.rollback if @auto_commit
-              raise e
+              raise translate_exception_class(e, sql, type_casted_binds)
             end
 
             ret = yield stmt, result if block_given?

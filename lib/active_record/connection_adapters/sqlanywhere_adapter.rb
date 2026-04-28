@@ -156,7 +156,11 @@ module ActiveRecord
         when -196 then RecordNotUnique.new(message, sql: sql, binds: binds)
         when -306 then Deadlocked.new(message, sql: sql, binds: binds)
         else
-          super
+          if exception.respond_to?(:message) && exception.message.to_s.match?(/foreign key/i)
+            InvalidForeignKey.new(message, sql: sql, binds: binds)
+          else
+            super
+          end
         end
       end
 
