@@ -91,7 +91,7 @@ module ActiveRecord
       def initialize(connection, logger, connection_string, config)
         @auto_commit = true
         @connection_string = connection_string
-        # Rails 7.1 AbstractAdapter: 4-arg form sets @config from last hash and @connection_parameters from the third arg.
+        # Rails 7.1 AbstractAdapter: 4-arg form sets @config from last hash and @raw_connection_parameters from the third arg.
         super(connection, logger, connection_string, config)
       end
 
