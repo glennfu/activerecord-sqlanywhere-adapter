@@ -145,7 +145,11 @@ module ActiveRecord
           end
         end
 
-        def exec_query(sql, name = nil, binds = [], prepare = false)
+        def internal_exec_query(sql, name = "SQL", binds = [], prepare: false, async: false) # :nodoc:
+          if async && async_enabled?
+            raise ActiveRecord::AsynchronousQueryInsideTransactionError, "SQL Anywhere adapter does not support async queries"
+          end
+
           execute_stmt(sql, name, binds, cache_stmt: prepare) do |stmt, result|
             build_result(columns: result.columns.map(&:name), rows: result.rows) if result
           end
@@ -156,7 +160,7 @@ module ActiveRecord
         end
         alias :exec_update :exec_delete
 
-        def execute(sql, name = nil)
+        def execute(sql, name = nil, allow_retry: false)
           log(sql, name) do
             execute_stmt_with_binds(sql)
           end
