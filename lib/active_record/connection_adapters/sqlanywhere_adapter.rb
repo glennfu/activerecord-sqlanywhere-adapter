@@ -116,6 +116,10 @@ module ActiveRecord
       end
 
       def active?
+        # Rails 7.1 keeps the live handle in @unconfigured_connection until #verify! runs;
+        # @raw_connection is nil until then. Return false so verify! promotes the connection.
+        return false if @raw_connection.nil?
+
         # The liveness variable is used a low-cost "no-op" to test liveness
         @raw_connection.execute_immediate("SET liveness = 1")
 
@@ -126,7 +130,10 @@ module ActiveRecord
 
       def disconnect!
         super
-        @raw_connection.close
+        conn = @raw_connection || @unconfigured_connection
+        conn&.close
+        @raw_connection = nil
+        @unconfigured_connection = nil
       end
 
       def reconnect!
@@ -138,6 +145,7 @@ module ActiveRecord
 
       def discard!
         @raw_connection = nil
+        @unconfigured_connection = nil
       end
 
       def translate_exception(exception, message:, sql:, binds:)
