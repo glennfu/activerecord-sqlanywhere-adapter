@@ -67,7 +67,7 @@ module ActiveRecord
           SQL
         end
 
-        def new_column_from_field(table_name, field)
+        def new_column_from_field(table_name, field, _definitions = nil)
           type_metadata = fetch_type_metadata(field["domain"])
 
           # numerics and string literals are default
